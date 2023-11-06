@@ -2,7 +2,11 @@
 
 This repository contains various examples that demonstrate how to interact with the Livion API. The examples cover authentication methods, generating authorization headers, and making API requests using different programming languages.
 
+## API Documentation
+https://apidocsv2.livionkey.com/
+
 ## Authentication
+https://apidocsv2.livionkey.com/#section/Authentication
 
 The `auth` directory includes language-specific implementations for creating authentication headers and sending requests to the Livion API. Each subfolder contains a complete example suited for the respective programming environment.
 
