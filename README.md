@@ -8,7 +8,7 @@ https://apidocsv2.livionkey.com/
 ## Authentication
 https://apidocsv2.livionkey.com/#section/Authentication
 
-The `auth` directory includes language-specific implementations for creating authentication headers and sending requests to the Livion API. Each subfolder contains a complete example suited for the respective programming environment.
+The `examples/auth` directory includes language-specific implementations for creating authentication headers and sending requests to the Livion API. Each subfolder contains a complete example suited for the respective programming environment.
 
 ### Structure
 
