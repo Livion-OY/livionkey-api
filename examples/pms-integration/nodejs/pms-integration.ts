@@ -85,14 +85,14 @@ async function makeAPICall<T>(
 }
 
 /**
- * Example 1: Fetch available mechanical keys
+ * Example 1: Fetch available mechanical keys stored in Key Automat
  */
 async function fetchAvailableKeys(): Promise<MechanicalKey[]> {
   console.log("Fetching available keys...");
 
   const response = await makeAPICall<{ data: MechanicalKey[] }>(
     "GET",
-    "/mechanical/keys?limit=100"
+    "/mechanical/keys?limit=100&selectedStorage=1"
   );
 
   console.log(`Found ${response.data.length} keys`);
