@@ -106,7 +106,6 @@ async function createBookingContract(bookingData: {
   keyId: string;
   guestName: string;
   guestEmail: string;
-  guestPhone: string;
   checkInDate: string;
   checkOutDate: string;
 }): Promise<KeyContract> {
@@ -118,7 +117,6 @@ async function createBookingContract(bookingData: {
     contact: {
       name: bookingData.guestName,
       email: bookingData.guestEmail,
-      phoneNumber: bookingData.guestPhone,
       // PMS handles notifications, so disable LivionKey notifications
       sendSms: false,
       sendEmail: false,
@@ -209,7 +207,7 @@ async function demonstratePMSFlow(): Promise<void> {
     // Step 1: Fetch available keys (do this during setup)
     const keys = await fetchAvailableKeys();
 
-    // Step 2: Map your properties to keys (store these mappings in your database)
+    // Step 2: Map your properties to keys (store these mappings in your system)
     const propertyKeyMappings = new Map([
       ["room-101", keys[0]?.id], // Map room-101 to first available key
       ["room-102", keys[1]?.id], // Map room-102 to second available key
@@ -220,7 +218,6 @@ async function demonstratePMSFlow(): Promise<void> {
       keyId: propertyKeyMappings.get("room-101")!,
       guestName: "John Doe",
       guestEmail: "john.doe@example.com",
-      guestPhone: "+1234567890",
       checkInDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Tomorrow
       checkOutDate: new Date(
         Date.now() + 3 * 24 * 60 * 60 * 1000
@@ -275,5 +272,7 @@ async function sendGuestNotificationViaPMS(
   //   data: { guestName, pincode }
   // });
 }
+
+demonstratePMSFlow();
 
 // Webhook documentation and implementation examples coming later
