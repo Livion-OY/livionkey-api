@@ -18,6 +18,10 @@ The repository is structured as follows:
 
 #### Authentication Examples (`auth/`)
 
+The repository is structured as follows:
+
+#### Authentication Examples (`auth/`)
+
 - `go/`: Contains a Go example for generating authentication headers and making requests.
 - `nodejs/`: Contains a Node.js example for generating authentication headers and making requests.
 - `python/`: Contains a Python script showcasing how to generate headers and use the `requests` library for API communication.
