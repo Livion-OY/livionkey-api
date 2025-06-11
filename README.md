@@ -23,9 +23,15 @@ The repository is structured as follows:
 - `python/`: Contains a Python script showcasing how to generate headers and use the `requests` library for API communication.
 - `php/`: Contains a PHP script showcasing how to generate headers and use cURL for API communication.
 
-#### PMS Integration Example (`pms-integration/`)
+#### PMS Integration Examples
 
-- `nodejs/`: Complete Property Management System integration example demonstrating:
-  - Key automat integration workflow
+- `pms-integration-livionkey30/`: Mechanical key workflow with key automat
+
+  - Key automat integration
   - Booking-to-key contract creation
+  - Guest notification handling
+
+- `pms-integration-livionkey20/`: iLOQ S5 key workflow with key automat
+  - Mapping iLOQ access rights & automats to your listings
+  - Creating iLOQ key contracts for bookings
   - Guest notification handling
