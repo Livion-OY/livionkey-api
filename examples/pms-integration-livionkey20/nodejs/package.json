@@ -1,0 +1,35 @@
+{
+  "name": "livionkey-pms-integration-iloq-s5-keys",
+  "version": "1.0.0",
+  "description": "LivionKey PMS Integration Example - iLOQ S5 Keys",
+  "main": "pms-integration.ts",
+  "scripts": {
+    "generate-types": "openapi-typescript https://storage.googleapis.com/public-doc-json/production-publicAPI.json -o ./types/api.ts",
+    "start": "npm run generate-types && ts-node pms-integration.ts",
+    "build": "npm run generate-types && tsc pms-integration.ts",
+    "dev": "npm run generate-types && ts-node-dev --respawn pms-integration.ts"
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^18.19.111",
+    "@types/node-fetch": "^2.6.2",
+    "openapi-typescript": "^6.0.0",
+    "ts-node": "^10.9.0",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^4.8.0"
+  },
+  "keywords": [
+    "livionkey",
+    "pms",
+    "property-management",
+    "key-management",
+    "iloq",
+    "api",
+    "openapi",
+    "typescript"
+  ],
+  "author": "LivionKey",
+  "license": "MIT"
+} 
