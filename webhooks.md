@@ -2,13 +2,13 @@
 
 Livion can push event data to your HTTPS endpoint whenever relevant data changes in Livion's system. Each delivery is an HTTP `POST` with a JSON body, signed according to the [Standard Webhooks](https://www.standardwebhooks.com/) specification so you can verify that every request genuinely comes from Livion and has not been tampered with.
 
-Webhook subscriptions are managed self-service in the Livion Connect UI.
+Webhook subscriptions are managed self-service in the LivionKey WebApp.
 
 > Using the legacy LivionKey REST API? Webhook delivery for legacy integrations is configured differently — see [legacy/push-notification-service-events.md](legacy/push-notification-service-events.md). The event payloads are identical in both setups and are documented [below](#event-payloads).
 
 ## Setting Up a Subscription
 
-1. In Livion Connect, open the webhook settings and create a subscription with:
+1. In the LivionKey WebApp, open the webhook settings and create a subscription with:
    - a **name** for your own reference,
    - your **endpoint URL** — must be `https://` and publicly reachable (private/internal addresses are rejected),
    - the **organization unit** whose events you want (events from descendant units are included),
@@ -107,7 +107,7 @@ Common pitfalls:
 - Failed deliveries (timeouts, connection errors, non-`2xx` responses) are retried with exponential backoff, up to 11 attempts in total.
 - Every retry is **re-signed with a fresh `webhook-timestamp`** so timestamp validation keeps working; `webhook-id` stays the same across all retries of one delivery.
 - Redirects are not followed — the endpoint URL must respond directly.
-- The most recent delivery result (status code, attempts, errors) is visible on the subscription in Livion Connect.
+- The most recent delivery result (status code, attempts, errors) is visible on the subscription in the LivionKey WebApp.
 
 ## Event Payloads
 
@@ -266,7 +266,7 @@ Deactivation example:
 
 ## Summary
 
-1. Create a subscription in Livion Connect (HTTPS endpoint, one event type).
+1. Create a subscription in the LivionKey WebApp (HTTPS endpoint, one event type).
 2. Store the `whsec_...` secret when it is shown — it is shown only once.
 3. Implement signature verification (use a Standard Webhooks library, or verify manually against the raw body).
 4. Respond `2xx` quickly; process asynchronously.
