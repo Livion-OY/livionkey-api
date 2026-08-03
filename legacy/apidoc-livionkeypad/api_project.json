@@ -1,0 +1,20 @@
+{
+  "title": "LivionKeyPad API",
+  "url": "https://api.livionkey.com",
+  "name": "LivionKeyPad API",
+  "version": "3.5.0",
+  "description": "Provides endpoints for access and devices",
+  "template": {
+    "withGenerator": false,
+    "withConpare": false
+  },
+  "sampleUrl": false,
+  "defaultVersion": "0.0.0",
+  "apidoc": "0.3.0",
+  "generator": {
+    "name": "apidoc",
+    "time": "2026-08-03T06:30:50.457Z",
+    "url": "https://apidocjs.com",
+    "version": "0.29.0"
+  }
+}
