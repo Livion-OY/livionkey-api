@@ -12,9 +12,9 @@ Webhook subscriptions are managed self-service in the LivionKey WebApp.
    - a **name** for your own reference,
    - your **endpoint URL** — must be `https://` and publicly reachable (private/internal addresses are rejected),
    - the **organization unit** whose events you want (events from descendant units are included),
-   - **one event type** from the [catalog](#event-payloads). To receive several event types, create one subscription per event type.
+   - **one or more event types** from the [catalog](#event-payloads).
 2. On creation you are shown the **signing secret** (`whsec_...`) **exactly once**. Store it immediately in your secret storage — it cannot be retrieved later (only its last four characters remain visible). If you lose it, delete the subscription and create a new one.
-3. Send a **test delivery** from the UI. Your endpoint receives a signed sample payload of the subscribed event type; the subscription becomes active once your endpoint responds with HTTP `2xx`.
+3. Send a **test delivery** from the UI. Your endpoint receives a signed sample payload for each subscribed event type; the subscription becomes active once your endpoint responds with HTTP `2xx` to every test delivery.
 
 Test deliveries carry the same shape as live events, with placeholder values (device ids `"000000"`, and never real `pincode`/`code` values).
 
@@ -116,7 +116,7 @@ Common pitfalls:
 
 ## Event Payloads
 
-The following event types are available. A subscription delivers exactly one of them.
+The following event types are available. A subscription delivers the event types it subscribes to; each delivery carries a single event.
 
 ### `key-status`
 
@@ -271,7 +271,7 @@ Deactivation example:
 
 ## Summary
 
-1. Create a subscription in the LivionKey WebApp (HTTPS endpoint, one event type).
+1. Create a subscription in the LivionKey WebApp (HTTPS endpoint, one or more event types).
 2. Store the `whsec_...` secret when it is shown — it is shown only once.
 3. Implement signature verification (use a Standard Webhooks library, or verify manually against the raw body).
 4. Respond `2xx` quickly; process asynchronously.
