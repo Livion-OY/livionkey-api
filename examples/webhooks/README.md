@@ -6,6 +6,8 @@ Livion signs deliveries per the [Standard Webhooks](https://www.standardwebhooks
 
 - [`nodejs/`](nodejs/) — Express receiver (TypeScript).
 - [`python/`](python/) — Flask receiver.
+- [`go/`](go/) — net/http receiver.
+- [`php/`](php/) — plain PHP receiver (runnable with `php -S`).
 
 Both examples follow the same flow:
 

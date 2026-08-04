@@ -1,0 +1,9 @@
+{
+    "name": "livionkey/webhook-receiver",
+    "description": "LivionKey webhook receiver example with Standard Webhooks signature verification",
+    "license": "MIT",
+    "require": {
+        "php": "^8.0",
+        "standard-webhooks/standard-webhooks": "^1.0"
+    }
+}

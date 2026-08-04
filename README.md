@@ -26,6 +26,8 @@ Endpoints that receive Livion webhook deliveries and verify their signatures:
 
 - `nodejs/`: Express receiver using the Standard Webhooks library, plus manual verification with Node builtins.
 - `python/`: Flask receiver using the Standard Webhooks library, plus manual verification with the standard library.
+- `go/`: net/http receiver using the Standard Webhooks library, plus manual verification with the standard library.
+- `php/`: Plain PHP receiver using the Standard Webhooks library, plus manual verification with the standard library.
 
 ### PMS Integration Examples
 

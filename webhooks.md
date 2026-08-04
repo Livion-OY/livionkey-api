@@ -42,6 +42,8 @@ Because Livion signs per the Standard Webhooks spec, the official receiver libra
 
 - Node.js: [`standardwebhooks`](https://www.npmjs.com/package/standardwebhooks)
 - Python: [`standardwebhooks`](https://pypi.org/project/standardwebhooks/)
+- Go: [`github.com/standard-webhooks/standard-webhooks/libraries/go`](https://github.com/standard-webhooks/standard-webhooks/tree/main/libraries/go)
+- PHP: [`standard-webhooks/standard-webhooks`](https://packagist.org/packages/standard-webhooks/standard-webhooks)
 - More languages: https://github.com/standard-webhooks/standard-webhooks/tree/main/libraries
 
 ```js
