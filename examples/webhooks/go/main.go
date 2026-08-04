@@ -33,6 +33,11 @@ func main() {
 	}
 
 	http.HandleFunc("/livion-webhook", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
 		// IMPORTANT: verify the RAW body bytes, not a parsed/re-serialized version.
 		rawBody, err := io.ReadAll(r.Body)
 		if err != nil {

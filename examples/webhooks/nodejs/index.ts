@@ -53,8 +53,9 @@ export function verifyManually(secret: string, headers: Record<string, string | 
     const signatureHeader = headers['webhook-signature'];
     if (!id || !timestamp || !signatureHeader) return false;
 
-    // Reject stale timestamps (replay protection).
-    if (Math.abs(Date.now() / 1000 - Number(timestamp)) > 300) return false;
+    // Reject stale (or malformed) timestamps — replay protection.
+    const ts = Number(timestamp);
+    if (!Number.isFinite(ts) || Math.abs(Date.now() / 1000 - ts) > 300) return false;
 
     const key = Buffer.from(secret.replace(/^whsec_/, ''), 'base64');
     const expected = createHmac('sha256', key)

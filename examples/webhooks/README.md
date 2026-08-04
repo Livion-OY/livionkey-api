@@ -9,10 +9,10 @@ Livion signs deliveries per the [Standard Webhooks](https://www.standardwebhooks
 - [`go/`](go/) — net/http receiver.
 - [`php/`](php/) — plain PHP receiver (runnable with `php -S`).
 
-Both examples follow the same flow:
+All examples follow the same flow:
 
 1. Read the **raw request body** (before any JSON parsing).
 2. Verify `webhook-id` / `webhook-timestamp` / `webhook-signature` against your `whsec_...` secret.
 3. Respond `2xx` immediately; do real processing asynchronously.
 
-Set your subscription secret in the `LIVION_WEBHOOK_SECRET` environment variable before running either example.
+Set your subscription secret in the `LIVION_WEBHOOK_SECRET` environment variable before running an example.

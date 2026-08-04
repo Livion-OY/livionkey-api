@@ -65,7 +65,10 @@ function verifyManually(string $secret, array $headers, string $rawBody): bool
         return false;
     }
 
-    $key = base64_decode(preg_replace('/^whsec_/', '', $secret));
+    $key = base64_decode(preg_replace('/^whsec_/', '', $secret), true);
+    if ($key === false) {
+        return false;
+    }
     $expected = base64_encode(hash_hmac('sha256', "{$id}.{$timestamp}.{$rawBody}", $key, true));
 
     // The header may carry several space-separated signatures (e.g. during secret

@@ -44,14 +44,19 @@ def livion_webhook():
 
 def verify_manually(secret: str, headers: dict, raw_body: bytes) -> bool:
     """The same verification without the standardwebhooks dependency."""
+    # Header names may arrive in any casing (e.g. Flask title-cases them).
+    headers = {k.lower(): v for k, v in headers.items()}
     delivery_id = headers.get("webhook-id")
     timestamp = headers.get("webhook-timestamp")
     signature_header = headers.get("webhook-signature")
     if not delivery_id or not timestamp or not signature_header:
         return False
 
-    # Reject stale timestamps (replay protection).
-    if abs(time.time() - int(timestamp)) > 300:
+    # Reject stale (or malformed) timestamps — replay protection.
+    try:
+        if abs(time.time() - int(timestamp)) > 300:
+            return False
+    except ValueError:
         return False
 
     key = base64.b64decode(secret.removeprefix("whsec_"))
