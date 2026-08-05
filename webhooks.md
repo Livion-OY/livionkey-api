@@ -16,7 +16,7 @@ Webhook subscriptions are managed self-service in the LivionKey WebApp.
 2. On creation you are shown the **signing secret** (`whsec_...`) **exactly once**. Store it immediately in your secret storage — it cannot be retrieved later (only its last four characters remain visible). If you lose it, delete the subscription and create a new one.
 3. Send a **test delivery** from the UI. Your endpoint receives a signed sample payload for each subscribed event type; the subscription becomes active once your endpoint responds with HTTP `2xx` to every test delivery.
 
-Test deliveries use the same envelope shape as live events (see [Event Payloads](#event-payloads)), with placeholder values (device ids `"000000"`, and never real `pincode`/`code` values) and an `id` prefixed `evt_test_`.
+Test deliveries use the same envelope shape as live events (see [Event Payloads](#event-payloads)), with placeholder values (device ids `"000000"`, and never real `pincode`/`code` values).
 
 ## Verifying Signatures
 
@@ -127,7 +127,6 @@ Common pitfalls:
 ```json
 {
   "specVersion": "1",
-  "id": "<event id>",
   "type": "<catalog event type>",
   "occurredAt": "<ISO-8601>",
   "createdAt": "<ISO-8601>",
@@ -139,7 +138,6 @@ Common pitfalls:
 | Field | Meaning |
 | --- | --- |
 | `specVersion` | Envelope version. `"1"` for this shape. Bumped only on a breaking change to the envelope or to a `data` shape. |
-| `id` | Stable **event** id. Same across retries **and** across redeliveries — use it for event-level idempotency. Distinct from the `webhook-id` header, which identifies one delivery attempt-chain. |
 | `type` | The subscribed catalog event type: `key-status`, `contract-update`, `code-entered`, `device-alarm`. Always equal to the `webhook-event-type` header. |
 | `occurredAt` | When the event happened in the real world. |
 | `createdAt` | When Livion recorded the event. May differ from `occurredAt` under delay or backfill. |
@@ -155,7 +153,6 @@ Device-storage key:
 ```json
 {
   "specVersion": "1",
-  "id": "evt_018f2c9a1e4b7c319f2a2b1c8d4e5f60",
   "type": "key-status",
   "occurredAt": "2021-05-11T11:46:55.008Z",
   "createdAt": "2021-05-11T11:46:55.421Z",
@@ -177,7 +174,6 @@ Manual-storage / KeyRegister key — `deviceId` and `lockerIndex` are absent, si
 ```json
 {
   "specVersion": "1",
-  "id": "evt_018f2c9b3f5c8d42a03b3c2d9e5f6071",
   "type": "key-status",
   "occurredAt": "2021-05-11T11:46:55.008Z",
   "createdAt": "2021-05-11T11:46:55.402Z",
@@ -199,7 +195,6 @@ Used when a locker contract is added or updated. The contract's type (`default`,
 ```json
 {
   "specVersion": "1",
-  "id": "evt_018f2cb14a2d5e60b31c4d5e6f708192",
   "type": "contract-update",
   "occurredAt": "2021-05-11T11:46:55.008Z",
   "createdAt": "2021-05-11T11:46:55.377Z",
@@ -224,7 +219,6 @@ Used when a correct code is entered on the device. The kind of code is `data.cod
 ```json
 {
   "specVersion": "1",
-  "id": "evt_018f2cc25b3e6f71c42d5e6f70819203",
   "type": "code-entered",
   "occurredAt": "2021-05-11T11:46:55.008Z",
   "createdAt": "2021-05-11T11:46:55.298Z",
@@ -264,7 +258,6 @@ Supported `data.alarmType` values:
 ```json
 {
   "specVersion": "1",
-  "id": "evt_018f2cd36c4f7082d53e6f7081920314",
   "type": "device-alarm",
   "occurredAt": "2026-04-02T09:30:00.000Z",
   "createdAt": "2026-04-02T09:30:00.244Z",
