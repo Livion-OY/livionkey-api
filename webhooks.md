@@ -118,6 +118,8 @@ Common pitfalls:
 
 The following event types are available. A subscription delivers the event types it subscribes to; each delivery carries a single event.
 
+> **Identifying the event from the body:** the `type` field does **not** always equal the subscribed event type. For `key-status` and `device-alarm` it does; for `code-entered` it is the kind of code entered (`right-pincode`, `right-return-code`, `right-access-code`); for `contract-update` it is the **contract's type** (`default`, `fetch`, `return`) — the string `"contract-update"` never appears in a payload.
+
 ### `key-status`
 
 Used for key lifecycle updates.
@@ -153,11 +155,13 @@ Notes:
 
 Used when a locker contract is added or updated.
 
+The payload's `type` field is the **contract's type** — `default`, `fetch`, or `return` — not the event name.
+
 Example:
 
 ```json
 {
-  "type": "contract-update",
+  "type": "default",
   "pincode": "124578",
   "contractId": "Contract1",
   "contractObjectId": "9783297772ddh2i29d89238d39820",
@@ -179,7 +183,7 @@ Notes:
 
 Used when a correct code is entered on the device.
 
-Possible `type` values inside the payload:
+The payload's `type` field is the kind of code that was entered — not the event name:
 
 - `right-pincode`
 - `right-return-code`
@@ -189,7 +193,7 @@ Example:
 
 ```json
 {
-  "type": "code-entered",
+  "type": "right-pincode",
   "code": "124578",
   "deviceId": "234521",
   "lockerIndex": 1,
