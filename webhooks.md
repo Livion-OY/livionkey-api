@@ -18,6 +18,14 @@ Webhook subscriptions are managed self-service in the LivionKey WebApp.
 
 Test deliveries use the same envelope shape as live events (see [Event Payloads](#event-payloads)), with placeholder values (device ids `"000000"`, and never real `pincode`/`code` values).
 
+## Updating a Subscription
+
+An existing subscription's **event types** and **endpoint URL** can be edited — the signing secret is never affected by an update.
+
+- **Event types**: changes take effect immediately, no re-verification. Deliveries already queued for a removed event type are dropped.
+- **Endpoint URL**: the new URL is verified before it takes effect — Livion sends a signed sample delivery for each subscribed event type to the *new* URL, and the change is committed only when every one gets a `2xx`. If verification fails, the update is rejected and the previous URL stays in effect. In-flight and queued deliveries switch to the new URL once it is committed.
+- **Signing secret**: cannot be rotated in place — delete the subscription and create a new one (which issues a new secret).
+
 ## Verifying Signatures
 
 Every delivery carries three headers per the Standard Webhooks specification:
@@ -111,10 +119,11 @@ Common pitfalls:
 
 - Deliveries are `POST` requests with `content-type: application/json`.
 - Any `2xx` response marks the delivery successful. Respond quickly and process asynchronously — slow responses run into delivery timeouts.
-- Failed deliveries (timeouts, connection errors, non-`2xx` responses) are retried with exponential backoff, up to 11 attempts in total.
+- Failed deliveries (timeouts, connection errors, non-`2xx` responses) are retried on a fixed schedule of up to **20 attempts spanning roughly 6 hours**: dense at first (5s, 15s, 30s, 1m, 2m, 5m, 10m, 15m, 20m), then every 30 minutes. The first successful attempt stops the schedule.
 - Every retry is **re-signed with a fresh `webhook-timestamp`** so timestamp validation keeps working; `webhook-id` stays the same across all retries of one delivery.
+- Deliveries to one subscription are **ordered per source and event type**: while a delivery is retrying, later events for the same device and event type wait behind it rather than arriving out of order.
 - Redirects are not followed — the endpoint URL must respond directly.
-- The most recent delivery result (status code, attempts, errors) is visible on the subscription in the LivionKey WebApp.
+- The most recent delivery result (status code, attempts, errors) is visible on the subscription in the LivionKey WebApp — including, while a delivery is still retrying, when the next attempt is scheduled.
 
 ## Event Payloads
 
@@ -282,3 +291,4 @@ An acknowledged alarm carries `"acknowledged": true`; a deactivation carries `"s
 3. Implement signature verification (use a Standard Webhooks library, or verify manually against the raw body).
 4. Respond `2xx` quickly; process asynchronously. Deliveries are the [envelope shape](#event-payloads); route by the `webhook-event-type` header if useful before parsing.
 5. Send a test delivery to activate the subscription.
+6. Event types and the endpoint URL can be [edited later](#updating-a-subscription); URL changes are verified before they take effect. The secret cannot be rotated — delete and recreate for a new one.
