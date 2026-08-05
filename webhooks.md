@@ -4,7 +4,7 @@ Livion can push event data to your HTTPS endpoint whenever relevant data changes
 
 Webhook subscriptions are managed self-service in the LivionKey WebApp.
 
-> Using the legacy LivionKey REST API? Webhook delivery for legacy integrations is configured differently — see [legacy/push-notification-service-events.md](legacy/push-notification-service-events.md). The event payloads are identical in both setups and are documented [below](#event-payloads).
+> Using the legacy LivionKey REST API? Webhook delivery for legacy integrations is configured differently — see [legacy/push-notification-service-events.md](legacy/push-notification-service-events.md), which documents the **flat** payload shape legacy integrations receive. Self-service subscriptions (this page) receive events wrapped in an **envelope**, documented [below](#event-payloads). The two shapes are different — do not assume they match.
 
 ## Setting Up a Subscription
 
@@ -16,7 +16,7 @@ Webhook subscriptions are managed self-service in the LivionKey WebApp.
 2. On creation you are shown the **signing secret** (`whsec_...`) **exactly once**. Store it immediately in your secret storage — it cannot be retrieved later (only its last four characters remain visible). If you lose it, delete the subscription and create a new one.
 3. Send a **test delivery** from the UI. Your endpoint receives a signed sample payload for each subscribed event type; the subscription becomes active once your endpoint responds with HTTP `2xx` to every test delivery.
 
-Test deliveries carry the same shape as live events, with placeholder values (device ids `"000000"`, and never real `pincode`/`code` values).
+Test deliveries use the same envelope shape as live events (see [Event Payloads](#event-payloads)), with placeholder values (device ids `"000000"`, and never real `pincode`/`code` values) and an `id` prefixed `evt_test_`.
 
 ## Verifying Signatures
 
@@ -27,6 +27,8 @@ Every delivery carries three headers per the Standard Webhooks specification:
 | `webhook-id` | `64f8...` | Unique id of this delivery. Stays the same across retries of the same delivery. |
 | `webhook-timestamp` | `1754200000` | Unix epoch **seconds** when this attempt was signed. |
 | `webhook-signature` | `v1,K5oZfzN95Z9UVu1EsfQmfVNQhnkZ2pj9o9NDN/H/pI4=` | Base64 HMAC-SHA256 signature. |
+
+Each delivery also carries a `webhook-event-type` header (e.g. `webhook-event-type: key-status`), set to the same value as the envelope's `type` field. It is not part of the signature — it lets you route a delivery at the proxy/queue layer before parsing or verifying the body.
 
 The signed content is:
 
@@ -116,111 +118,139 @@ Common pitfalls:
 
 ## Event Payloads
 
-The following event types are available. A subscription delivers the event types it subscribes to; each delivery carries a single event.
+**This section documents the self-service subscription shape.** Every delivery is a JSON **envelope**: metadata fields alongside a `data` object holding the event-specific payload. A subscription delivers the event types it subscribes to; each delivery carries a single event.
 
-> **Identifying the event from the body:** the `type` field does **not** always equal the subscribed event type. For `key-status` and `device-alarm` it does; for `code-entered` it is the kind of code entered (`right-pincode`, `right-return-code`, `right-access-code`); for `contract-update` it is the **contract's type** (`default`, `fetch`, `return`) — the string `"contract-update"` never appears in a payload.
+> Using the legacy LivionKey REST API? Legacy deliveries use a different, **flat** body with no envelope — see [legacy/push-notification-service-events.md](legacy/push-notification-service-events.md#event-payloads). Do not use the shapes on this page for a legacy integration.
+
+### Envelope
+
+```json
+{
+  "specVersion": "1",
+  "id": "<event id>",
+  "type": "<catalog event type>",
+  "occurredAt": "<ISO-8601>",
+  "createdAt": "<ISO-8601>",
+  "organizationUnitId": "<org unit path>",
+  "data": { }
+}
+```
+
+| Field | Meaning |
+| --- | --- |
+| `specVersion` | Envelope version. `"1"` for this shape. Bumped only on a breaking change to the envelope or to a `data` shape. |
+| `id` | Stable **event** id. Same across retries **and** across redeliveries — use it for event-level idempotency. Distinct from the `webhook-id` header, which identifies one delivery attempt-chain. |
+| `type` | The subscribed catalog event type: `key-status`, `contract-update`, `code-entered`, `device-alarm`. Always equal to the `webhook-event-type` header. |
+| `occurredAt` | When the event happened in the real world. |
+| `createdAt` | When Livion recorded the event. May differ from `occurredAt` under delay or backfill. |
+| `organizationUnitId` | The organization unit the event is scoped to. |
+| `data` | The event-specific payload — see below. Contains no metadata: no `type`, no `time`, no `tag`. |
 
 ### `key-status`
 
-Used for key lifecycle updates.
+Used for key lifecycle updates. `data.state` is one of `key-fetched`, `key-returned`, `key-not-fetched`, `key-not-returned`. `data.storageType` is `device` or `manualStorage`.
 
-Possible `state` values:
-
-- `key-returned`
-- `key-fetched`
-- `key-not-returned`
-- `key-not-fetched`
-
-Example:
+Device-storage key:
 
 ```json
 {
+  "specVersion": "1",
+  "id": "evt_018f2c9a1e4b7c319f2a2b1c8d4e5f60",
   "type": "key-status",
-  "deviceId": "000000",
-  "lockerIndex": 1,
-  "keyId": "key1",
-  "contractId": "Contract1",
-  "contractObjectId": "9783297772ddh2i29d89238d39820",
-  "state": "key-fetched",
-  "time": "2021-05-11T11:46:55.008Z",
-  "tag": "livion/key/customer1"
+  "occurredAt": "2021-05-11T11:46:55.008Z",
+  "createdAt": "2021-05-11T11:46:55.421Z",
+  "organizationUnitId": "livion/key/customer1",
+  "data": {
+    "state": "key-fetched",
+    "storageType": "device",
+    "deviceId": "234521",
+    "lockerIndex": 1,
+    "keyId": "key1",
+    "contractId": "Contract1",
+    "contractObjectId": "9783297772ddh2i29d89238d39820"
+  }
 }
 ```
 
-Notes:
+Manual-storage / KeyRegister key — `deviceId` and `lockerIndex` are absent, since the key is not in a device:
 
-- `tag` is Livion-specific data.
+```json
+{
+  "specVersion": "1",
+  "id": "evt_018f2c9b3f5c8d42a03b3c2d9e5f6071",
+  "type": "key-status",
+  "occurredAt": "2021-05-11T11:46:55.008Z",
+  "createdAt": "2021-05-11T11:46:55.402Z",
+  "organizationUnitId": "livion/key/customer1",
+  "data": {
+    "state": "key-fetched",
+    "storageType": "manualStorage",
+    "keyId": "key1",
+    "contractId": "Contract1",
+    "contractObjectId": "9783297772ddh2i29d89238d39820"
+  }
+}
+```
 
 ### `contract-update`
 
-Used when a locker contract is added or updated.
-
-The payload's `type` field is the **contract's type** — `default`, `fetch`, or `return` — not the event name.
-
-Example:
+Used when a locker contract is added or updated. The contract's type (`default`, `fetch`, or `return`) is `data.contractType`.
 
 ```json
 {
-  "type": "default",
-  "pincode": "124578",
-  "contractId": "Contract1",
-  "contractObjectId": "9783297772ddh2i29d89238d39820",
-  "time": "2021-05-11T11:46:55.008Z",
-  "start": "2021-06-01T09:00:00.008Z",
-  "end": "2021-06-30T09:00:00.008Z",
-  "deviceId": "234521",
-  "keyId": "key1",
-  "tag": "livion/key/customer1"
+  "specVersion": "1",
+  "id": "evt_018f2cb14a2d5e60b31c4d5e6f708192",
+  "type": "contract-update",
+  "occurredAt": "2021-05-11T11:46:55.008Z",
+  "createdAt": "2021-05-11T11:46:55.377Z",
+  "organizationUnitId": "livion/key/customer1",
+  "data": {
+    "contractType": "default",
+    "contractId": "Contract1",
+    "contractObjectId": "9783297772ddh2i29d89238d39820",
+    "pincode": "124578",
+    "start": "2021-06-01T09:00:00.008Z",
+    "end": "2021-06-30T09:00:00.008Z",
+    "deviceId": "234521",
+    "keyId": "key1"
+  }
 }
 ```
-
-Notes:
-
-- `contractObjectId` is Livion-specific data.
-- `tag` is Livion-specific data.
 
 ### `code-entered`
 
-Used when a correct code is entered on the device.
-
-The payload's `type` field is the kind of code that was entered — not the event name:
-
-- `right-pincode`
-- `right-return-code`
-- `right-access-code`
-
-Example:
+Used when a correct code is entered on the device. The kind of code is `data.codeType`: `right-pincode`, `right-return-code`, or `right-access-code`.
 
 ```json
 {
-  "type": "right-pincode",
-  "code": "124578",
-  "deviceId": "234521",
-  "lockerIndex": 1,
-  "keyId": "key1",
-  "contractId": "Contract1",
-  "contractObjectId": "9783297772ddh2i29d89238d39820",
-  "time": "2021-05-11T11:46:55.008Z",
-  "tag": "livion/key/customer1"
+  "specVersion": "1",
+  "id": "evt_018f2cc25b3e6f71c42d5e6f70819203",
+  "type": "code-entered",
+  "occurredAt": "2021-05-11T11:46:55.008Z",
+  "createdAt": "2021-05-11T11:46:55.298Z",
+  "organizationUnitId": "livion/key/customer1",
+  "data": {
+    "codeType": "right-pincode",
+    "code": "124578",
+    "deviceId": "234521",
+    "lockerIndex": 1,
+    "keyId": "key1",
+    "contractId": "Contract1",
+    "contractObjectId": "9783297772ddh2i29d89238d39820"
+  }
 }
 ```
 
 Notes:
 
-- `contractId` may be missing for return code events.
-- `keyId` and `lockerIndex` may be missing for access code events.
-- `tag` is Livion-specific data.
+- `data.contractId` is absent for return codes.
+- `data.keyId` and `data.lockerIndex` are absent for access codes.
 
 ### `device-alarm`
 
-Used for supported public device alarms.
+Used for supported public device alarms. `data.state` is `activated` or `deactivated`.
 
-Possible `state` values:
-
-- `activated`
-- `deactivated`
-
-Supported `alarmType` values:
+Supported `data.alarmType` values:
 
 - `DEVICE_ERROR`
 - `DEVICE_POWER_DISCONNECTED`
@@ -231,52 +261,31 @@ Supported `alarmType` values:
 
 `KEY_NOT_RETURNED` is not included in `device-alarm`, because that case is already delivered through `key-status` with `state = key-not-returned`.
 
-Activation example:
-
 ```json
 {
+  "specVersion": "1",
+  "id": "evt_018f2cd36c4f7082d53e6f7081920314",
   "type": "device-alarm",
-  "alarmType": "DEVICE_DISCONNECTED",
-  "deviceId": "device123",
-  "state": "activated",
-  "start": "2026-04-02T09:30:00.000Z",
-  "end": null,
-  "acknowledged": false
+  "occurredAt": "2026-04-02T09:30:00.000Z",
+  "createdAt": "2026-04-02T09:30:00.244Z",
+  "organizationUnitId": "livion/key/customer1",
+  "data": {
+    "alarmType": "DEVICE_DISCONNECTED",
+    "state": "activated",
+    "deviceId": "device123",
+    "start": "2026-04-02T09:30:00.000Z",
+    "end": null,
+    "acknowledged": false
+  }
 }
 ```
 
-Acknowledged alarm example:
-
-```json
-{
-  "type": "device-alarm",
-  "alarmType": "DEVICE_DISCONNECTED",
-  "deviceId": "device123",
-  "state": "activated",
-  "start": "2026-04-02T09:30:00.000Z",
-  "end": null,
-  "acknowledged": true
-}
-```
-
-Deactivation example:
-
-```json
-{
-  "type": "device-alarm",
-  "alarmType": "DEVICE_MOVED",
-  "deviceId": "device123",
-  "state": "deactivated",
-  "start": "2026-04-02T09:00:00.000Z",
-  "end": "2026-04-02T09:35:00.000Z",
-  "acknowledged": true
-}
-```
+An acknowledged alarm carries `"acknowledged": true`; a deactivation carries `"state": "deactivated"` and a populated `end`.
 
 ## Summary
 
 1. Create a subscription in the LivionKey WebApp (HTTPS endpoint, one or more event types).
 2. Store the `whsec_...` secret when it is shown — it is shown only once.
 3. Implement signature verification (use a Standard Webhooks library, or verify manually against the raw body).
-4. Respond `2xx` quickly; process asynchronously.
+4. Respond `2xx` quickly; process asynchronously. Deliveries are the [envelope shape](#event-payloads); route by the `webhook-event-type` header if useful before parsing.
 5. Send a test delivery to activate the subscription.
