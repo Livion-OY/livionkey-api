@@ -150,7 +150,7 @@ Common pitfalls:
 | `type` | The subscribed catalog event type: `key-status`, `contract-update`, `code-entered`, `device-alarm`. Always equal to the `webhook-event-type` header. |
 | `occurredAt` | When the event happened in the real world. |
 | `createdAt` | When Livion recorded the event. May differ from `occurredAt` under delay or backfill. |
-| `organizationUnitId` | Id of the organization unit the event is scoped to — the subscribed unit or one of its sub-units. The same unit id the LivionKey APIs use. |
+| `organizationUnitId` | Id of the organization unit the event is scoped to — the subscribed unit or one of its sub-units. The same unit id the LivionKey APIs use. Treat it as an opaque string — for some older units it contains `/` characters. |
 | `data` | The event-specific payload — see below. Contains no metadata: no `type`, no `time`, no `tag`. |
 
 Where `data.deviceId` is present, it identifies the device the event relates to: a key automat or a keypad, depending on the event source.
