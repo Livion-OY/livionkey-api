@@ -139,7 +139,7 @@ Common pitfalls:
   "type": "<catalog event type>",
   "occurredAt": "<ISO-8601>",
   "createdAt": "<ISO-8601>",
-  "organizationUnitId": "<org unit path>",
+  "organizationUnitId": "<org unit id>",
   "data": { }
 }
 ```
@@ -150,8 +150,10 @@ Common pitfalls:
 | `type` | The subscribed catalog event type: `key-status`, `contract-update`, `code-entered`, `device-alarm`. Always equal to the `webhook-event-type` header. |
 | `occurredAt` | When the event happened in the real world. |
 | `createdAt` | When Livion recorded the event. May differ from `occurredAt` under delay or backfill. |
-| `organizationUnitId` | The organization unit the event is scoped to. |
+| `organizationUnitId` | Id of the organization unit the event is scoped to — the subscribed unit or one of its sub-units. The same unit id the LivionKey APIs use. |
 | `data` | The event-specific payload — see below. Contains no metadata: no `type`, no `time`, no `tag`. |
+
+Where `data.deviceId` is present, it identifies the device the event relates to: a key automat or a keypad, depending on the event source.
 
 ### `key-status`
 
@@ -165,7 +167,7 @@ Device-storage key:
   "type": "key-status",
   "occurredAt": "2021-05-11T11:46:55.008Z",
   "createdAt": "2021-05-11T11:46:55.421Z",
-  "organizationUnitId": "livion/key/customer1",
+  "organizationUnitId": "customer1",
   "data": {
     "state": "key-fetched",
     "storageType": "device",
@@ -186,7 +188,7 @@ Manual-storage / KeyRegister key — `deviceId` and `lockerIndex` are absent, si
   "type": "key-status",
   "occurredAt": "2021-05-11T11:46:55.008Z",
   "createdAt": "2021-05-11T11:46:55.402Z",
-  "organizationUnitId": "livion/key/customer1",
+  "organizationUnitId": "customer1",
   "data": {
     "state": "key-fetched",
     "storageType": "manualStorage",
@@ -207,7 +209,7 @@ Used when a locker contract is added or updated. The contract's type (`default`,
   "type": "contract-update",
   "occurredAt": "2021-05-11T11:46:55.008Z",
   "createdAt": "2021-05-11T11:46:55.377Z",
-  "organizationUnitId": "livion/key/customer1",
+  "organizationUnitId": "customer1",
   "data": {
     "contractType": "default",
     "contractId": "Contract1",
@@ -231,7 +233,7 @@ Used when a correct code is entered on the device. The kind of code is `data.cod
   "type": "code-entered",
   "occurredAt": "2021-05-11T11:46:55.008Z",
   "createdAt": "2021-05-11T11:46:55.298Z",
-  "organizationUnitId": "livion/key/customer1",
+  "organizationUnitId": "customer1",
   "data": {
     "codeType": "right-pincode",
     "code": "124578",
@@ -270,7 +272,7 @@ Supported `data.alarmType` values:
   "type": "device-alarm",
   "occurredAt": "2026-04-02T09:30:00.000Z",
   "createdAt": "2026-04-02T09:30:00.244Z",
-  "organizationUnitId": "livion/key/customer1",
+  "organizationUnitId": "customer1",
   "data": {
     "alarmType": "DEVICE_DISCONNECTED",
     "state": "activated",
