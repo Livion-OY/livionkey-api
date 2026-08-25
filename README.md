@@ -1,33 +1,35 @@
-# Livion API Examples
+# Livion API Resources
 
-This repository contains various examples that demonstrate how to interact with the Livion API. The examples cover authentication methods, generating authorization headers, and making API requests using different programming languages.
+Official LivionKey API resources: documentation and examples for integrating with the Livion API.
 
 ## API Documentation
 
-https://apidocsv2.livionkey.com/
+- **API v2 reference**: https://apidocsv2.livionkey.com/
+- **Authentication**: https://apidocsv2.livionkey.com/#section/Authentication
+- **Webhooks**: [webhooks.md](webhooks.md) — self-service webhook subscriptions, signature verification and event payloads.
+- **Legacy REST APIs**: [legacy/](legacy/) — API reference and webhook documentation for integrations built on the legacy LivionKey and LivionKeyPad REST APIs.
 
-## Authentication
+## Examples
 
-https://apidocsv2.livionkey.com/#section/Authentication
+### Authentication (`examples/auth/`)
 
-The `examples/auth` directory includes language-specific implementations for creating authentication headers and sending requests to the Livion API. Each subfolder contains a complete example suited for the respective programming environment.
+Language-specific implementations for creating authentication headers and sending requests to the Livion API:
 
-### Structure
+- `go/`: Go example for generating authentication headers and making requests.
+- `nodejs/`: Node.js example for generating authentication headers and making requests.
+- `python/`: Python script showcasing how to generate headers and use the `requests` library for API communication.
+- `php/`: PHP script showcasing how to generate headers and use cURL for API communication.
 
-The repository is structured as follows:
+### Webhook Receivers (`examples/webhooks/`)
 
-#### Authentication Examples (`auth/`)
+Endpoints that receive Livion webhook deliveries and verify their signatures:
 
-The repository is structured as follows:
+- `nodejs/`: Express receiver using the Standard Webhooks library, plus manual verification with Node builtins.
+- `python/`: Flask receiver using the Standard Webhooks library, plus manual verification with the standard library.
+- `go/`: net/http receiver using the Standard Webhooks library, plus manual verification with the standard library.
+- `php/`: Plain PHP receiver using the Standard Webhooks library, plus manual verification with the standard library.
 
-#### Authentication Examples (`auth/`)
-
-- `go/`: Contains a Go example for generating authentication headers and making requests.
-- `nodejs/`: Contains a Node.js example for generating authentication headers and making requests.
-- `python/`: Contains a Python script showcasing how to generate headers and use the `requests` library for API communication.
-- `php/`: Contains a PHP script showcasing how to generate headers and use cURL for API communication.
-
-#### PMS Integration Examples
+### PMS Integration Examples
 
 - `pms-integration-livionkey30/`: Mechanical key workflow with key automat
 
