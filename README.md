@@ -7,7 +7,7 @@ Official LivionKey API resources: documentation and examples for integrating wit
 - **API v2 reference**: https://apidocsv2.livionkey.com/
 - **Authentication**: https://apidocsv2.livionkey.com/#section/Authentication
 - **Webhooks**: [webhooks.md](webhooks.md) — self-service webhook subscriptions, signature verification and event payloads.
-- **Legacy REST APIs**: [legacy/](legacy/) — API reference and webhook documentation for integrations built on the legacy LivionKey and LivionKeyPad REST APIs.
+- **Legacy REST APIs**: [legacy/](legacy/) — authentication, API reference and webhook documentation for integrations built on the legacy LivionKey and LivionKeyPad REST APIs.
 
 ## Examples
 
