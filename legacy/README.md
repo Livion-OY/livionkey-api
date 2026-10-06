@@ -64,9 +64,9 @@ Note the `Bearer ` prefix: a bare token in the header is rejected with `403 No t
 
 The token is valid for one hour from login. Requirements for a well-behaved integration:
 
-- **Log in once, reuse the token.** Keep the token and its `expirationTime` in memory (or in a shared cache if you run several workers). Do not call `/auth/login` before every request: it is a full sign-in on every call, it slows every request down, and repeated logins from the same address are throttled by the identity provider (`auth/too-many-requests`).
+- **Log in once, reuse the token.** Keep the token and its `expirationTime` in memory (or in a shared cache if you run several workers). Do not call `/auth/login` before every request: it is a full sign-in on every call, it slows every request down, and repeated logins are throttled: once the limit is hit, `/auth/login` answers `429` with a `Retry-After` header (seconds) until the throttle clears.
 - **Refresh proactively.** Log in again a few minutes before `expirationTime` (for example when less than five minutes remain), so in-flight requests never race the expiry.
-- **Handle a rejected token by refreshing and retrying once.** An expired or otherwise invalid token is rejected with HTTP `500` and a body ending in `not authorized` (see the error table below), not with `401`. Treat that response as "token no longer valid": discard the cached token, log in again, and retry the request one time.
+- **Handle a rejected token by refreshing and retrying once.** An expired or otherwise invalid token is rejected with HTTP `401` (see the error table below). Treat that response as "token no longer valid": discard the cached token, log in again, and retry the request one time.
 - **There is no server-side logout.** To end a session simply discard the token; it stops working at `expirationTime`.
 
 Minimal example of a cached token getter (Node.js 18+, no dependencies):
@@ -104,13 +104,9 @@ async function api(method, path, body, retry = true) {
     },
     body: body ? JSON.stringify(body) : undefined,
   });
-  if (res.status === 500 && retry) {
-    const text = await res.text();
-    if (text.endsWith('not authorized')) {
-      cached = null; // token rejected: log in again and retry once
-      return api(method, path, body, false);
-    }
-    throw new Error(`${method} ${path} failed: 500 ${text}`);
+  if (res.status === 401 && retry) {
+    cached = null; // token rejected: log in again and retry once
+    return api(method, path, body, false);
   }
   if (!res.ok) throw new Error(`${method} ${path} failed: ${res.status} ${await res.text()}`);
   return res.json();
@@ -126,9 +122,9 @@ const devices = await api('GET', '/devices');
 | --- | --- | --- |
 | `400` | `Missing email from parameters` / `Missing password from parameters` | Login body is missing a field. Send JSON with `Content-Type: application/json`. |
 | `400` | `Firebase: Error (auth/invalid-login-credentials).` | Wrong email or password. |
-| `400` | `Firebase: Error (auth/too-many-requests).` | Too many login attempts from the same address. Cache the token instead of logging in per request, then back off. |
+| `401` | `GraphQL - <timestamp> - <id> - not authorized` | Token expired or malformed, or the account has no access to the requested resource. Refresh the token and retry once; if it still fails, check the account's access with Livion. |
 | `403` | `{"success":false,"message":"No token provided."}` | `Authorization` header is missing or is not in the form `Bearer <token>`. |
-| `500` | `GraphQL - <timestamp> - <id> - not authorized` | Token expired or malformed, or the account has no access to the requested resource. Refresh the token and retry once; if it still fails, check the account's access with Livion. |
+| `429` | `Too many login attempts, try again later` | Login is throttled. Wait the number of seconds in the `Retry-After` header before logging in again, and cache the token instead of logging in per request. |
 
 ## Quick start: create a key contract
 
